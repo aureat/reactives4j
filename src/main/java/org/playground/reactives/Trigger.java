@@ -4,35 +4,35 @@ import java.util.concurrent.Future;
 
 public class Trigger extends BaseNode<Void> {
 
-    Trigger() {
-        super(NodeType.Trigger, new TriggerState(), NodeStatus.Clean);
+    Trigger(Context cx) {
+        super(cx, NodeType.Trigger, new TriggerState(), NodeStatus.Clean);
     }
 
-    static Trigger create() {
-        return withRuntime(runtime -> {
-            var trigger = new Trigger();
+    static Trigger create(Context cx) {
+        return cx.with(runtime -> {
+            var trigger = new Trigger(cx);
             runtime.addNode(trigger);
             return trigger;
         });
     }
 
     public void get() {
-        withRuntime(this::track);
+        context.with(this::track);
     }
 
     public Future<Void> getAsync() {
-        return submitWithRuntime(this::track);
+        return context.submitWith(this::track);
     }
 
     public void doWith(Runnable action) {
-        doWithRuntime(runtime -> {
+        context.doWith(runtime -> {
             track(runtime);
             action.run();
         });
     }
 
     public void set() {
-        submitWithRuntime(this::trigger);
+        context.submitWith(this::trigger);
     }
 
 }

@@ -13,8 +13,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 @Log4j2
 public class Context {
@@ -106,6 +108,129 @@ public class Context {
         if (current.isPresentAnd(x -> x == this)) {
             current.clear();
         }
+    }
+
+    /**
+     * Takes an inner value and returns a reactive and mutable value.
+     * <p> The inner value can be retrieved using {@link Reactive#get()} or equivalent methods inside a reactive closure.
+     * Read (retrieve) operations are tracked. </p>
+     * <p> The value can also be updated using {@link Reactive#set(Object)} or equivalent methods.
+     * Write (update) operations trigger associated effects. </p>
+     *
+     * @param value inner value
+     * @param <T>   type of the inner value
+     * @return the new reactive value
+     * @see Reactive
+     */
+    @Contract("_ -> new")
+    public <T> @NotNull Reactive<T> reactive(T value) {
+        return Reactive.create(this, value);
+    }
+
+    /**
+     * Creates a new trigger. Triggers are used to track operations
+     * and trigger updates without holding a value.
+     *
+     * @return the new trigger
+     * @see Trigger
+     */
+    @Contract("-> new")
+    public @NotNull Trigger trigger() {
+        return Trigger.create(this);
+    }
+
+    /**
+     * Takes a getter function and returns a readonly reactive value.
+     * <p> The value can be retrieved using {@link Reactive#get()} or equivalent methods inside a reactive closure.
+     * Just like {@link #reactive(Object)}, read (retrieve) operations on memos are also tracked. </p>
+     *
+     * @param fx  getter function
+     * @param <T> type of the inner value
+     * @return the new memo
+     */
+    @Contract("_ -> new")
+    public <T> @NotNull Memo<T> memo(@NotNull Supplier<T> fx) {
+        return Memo.create(this, fx);
+    }
+
+    /**
+     * Takes a reactive closure and returns an effect handle.
+     * Effects are used to trigger side effects without holding a value.
+     * Effects are queued to run once immediately after creation,
+     * and re-run whenever their dependencies change.
+     *
+     * @param fx reactive closure
+     * @return the new effect
+     */
+    @Contract("_ -> new")
+    public @NotNull Effect effect(@NotNull Runnable fx) {
+        return Effect.create(this, fx);
+    }
+
+    /**
+     * Watch on a reactive value that does not track the old value.
+     *
+     * @see #watch(Reactive, BiConsumer)
+     */
+    @Contract("_, _ -> new")
+    public <T> @NotNull Watch<T> watch(@NotNull Reactive<T> rx, @NotNull Consumer<T> fx) {
+        return Watch.create(this, rx, (value, _old) -> fx.accept(value));
+    }
+
+    /**
+     * Takes a reactive value and a function, and returns a watch handle.
+     * Watches explicitly declare their dependency and run only when their dependency changes.
+     * This variant tracks the old value of the reactive value.
+     *
+     * @param <T> type of the reactive value
+     * @param rx  reactive value
+     * @param fx  reactive closure
+     * @return the new watch
+     * @see #watch(Reactive, Consumer)
+     */
+    @Contract("_, _ -> new")
+    public <T> @NotNull Watch<T> watch(@NotNull Reactive<T> rx, @NotNull BiConsumer<T, T> fx) {
+        return Watch.create(this, rx, fx);
+    }
+
+    /**
+     * Watch on a memo that does not track the old value.
+     *
+     * @see #watch(Memo, BiConsumer)
+     */
+    @Contract("_, _ -> new")
+    public <T> @NotNull Watch<T> watch(@NotNull Memo<T> rx, @NotNull Consumer<T> fx) {
+        return Watch.create(this, rx, (value, _old) -> fx.accept(value));
+    }
+
+    /**
+     * Takes a memo and a function, and returns a watch handle.
+     * For a variant that takes a reactive value, see {@link #watch(Reactive, BiConsumer)}.
+     * This variant tracks the old value of the memo.
+     *
+     * @param <T> type of the memo
+     * @param rx  memo
+     * @param fx  reactive closure
+     * @return the new watch
+     * @see #watch(Memo, Consumer)
+     */
+    @Contract("_, _ -> new")
+    public <T> @NotNull Watch<T> watch(@NotNull Memo<T> rx, @NotNull BiConsumer<T, T> fx) {
+        return Watch.create(this, rx, fx);
+    }
+
+    /**
+     * Takes a trigger and a function with no arguments, and returns a watch handle.
+     *
+     * @param rx trigger
+     * @param fx reactive closure
+     * @return the new watch
+     * @see #watch(Reactive, BiConsumer)
+     */
+    @Contract("_, _ -> new")
+    public @NotNull Watch<Void> watch(@NotNull Trigger rx, @NotNull Runnable fx) {
+        BiConsumer<Void, Void> f = (_1, _2) -> fx.run();
+        return Watch.create(this, rx, f);
     }
 
     @NotNull Future<Void> submit(@NotNull Runtime runtime, @NotNull Consumer<Runtime> f) {
@@ -245,6 +370,12 @@ public class Context {
         log.warn("Scheduled tasks were not executed.");
     }
 
+    /**
+     * Warns about a blocking function.
+     *
+     * @param current     function being used
+     * @param alternative asynchronous alternative
+     */
     void warnBlocking(String current, String alternative) {
         if (isReactiveThread()) {
             return;

@@ -7,13 +7,13 @@ import java.util.function.Supplier;
 
 public class Reactive<T> extends BaseNode<T> {
 
-    private Reactive(T value) {
-        super(NodeType.Ref, new ReactiveState<>(value), NodeStatus.Clean);
+    private Reactive(Context cx, T value) {
+        super(cx, NodeType.Ref, new ReactiveState<>(value), NodeStatus.Clean);
     }
 
-    static <T> Reactive<T> create(T value) {
-        submitWithRuntime(runtime -> {
-            var reactive = new Reactive<>(value);
+    static <T> Reactive<T> create(Context cx, T value) {
+        return cx.with(runtime -> {
+            var reactive = new Reactive<>(cx, value);
             runtime.addNode(reactive);
             return reactive;
         });
