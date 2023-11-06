@@ -20,25 +20,10 @@ public class TaskContext {
         return TaskContextHolder.instance;
     }
 
-    /**
-     * Submits an asynchronous task that runs on its own thread.
-     * Returns a future that can be used to check task completion.
-     *
-     * @see TaskContext#submitTask(Callable)
-     */
     @NotNull Future<Void> submitTask(@NotNull Runnable fx) {
         return service.submit(fx, null);
     }
 
-    /**
-     * Submits an asynchronous task that runs on its own thread.
-     * Returns a future that can be used to retrieve the result of the computation.
-     * Technically, these are virtual threads, designed for these sort of tasks.
-     * This variant returns a result, for a variant that doesn't return a result, {@link TaskContext#submitTask(Runnable)}
-     *
-     * @see Resource
-     * @see Job
-     */
     <R> @NotNull Future<R> submitTask(@NotNull Callable<R> fx) {
         return service.submit(fx);
     }

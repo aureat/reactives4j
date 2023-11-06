@@ -1,10 +1,10 @@
 package reactives4j.core;
 
 import org.jetbrains.annotations.NotNull;
+import reactives4j.maybe.Maybe;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.maybe.Maybe;
 
 class ReactiveState<T> extends BaseState<T> {
 
@@ -42,6 +42,11 @@ class ReactiveState<T> extends BaseState<T> {
     @Override
     void modifyValue(@NotNull Consumer<T> action) {
         value.expectPresent(BaseState::panicAbsent).doWithUnchecked(action);
+    }
+
+    @Override
+    public String toString() {
+        return String.format("ReactiveState(%s)", value);
     }
 
 }

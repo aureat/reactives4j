@@ -1,4 +1,4 @@
-package java.util.maybe;
+package reactives4j.maybe;
 
 public class MaybeStateException extends Exception {
 

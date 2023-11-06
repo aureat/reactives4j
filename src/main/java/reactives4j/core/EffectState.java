@@ -11,7 +11,7 @@ class EffectState extends BaseState<Void> {
     }
 
     @Override
-    boolean canObserve() {
+    boolean isObserver() {
         return true;
     }
 
@@ -20,6 +20,11 @@ class EffectState extends BaseState<Void> {
         runtime.cleanupSources(node);
         function.run();
         return true;
+    }
+
+    @Override
+    public String toString() {
+        return "EffectState";
     }
 
 }

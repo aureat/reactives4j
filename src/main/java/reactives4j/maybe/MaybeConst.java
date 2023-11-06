@@ -1,4 +1,4 @@
-package java.util.maybe;
+package reactives4j.maybe;
 
 import java.util.function.Consumer;
 import java.util.function.Function;

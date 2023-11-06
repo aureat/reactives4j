@@ -1,4 +1,4 @@
-package java.util.maybe;
+package reactives4j.maybe;
 
 import org.jetbrains.annotations.NotNull;
 

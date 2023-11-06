@@ -6,6 +6,8 @@ import reactives4j.core.ReactiveContext;
 import javax.swing.*;
 import java.awt.*;
 
+import static reactives4j.core.Reactives.context;
+
 public class CounterApp {
 
     private final JFrame frame = new JFrame();
@@ -36,7 +38,7 @@ public class CounterApp {
     }
 
     public static void main(String[] args) {
-        var cx = Reactives.createContext();
+        var cx = context();
         var app = new CounterApp(cx);
     }
 

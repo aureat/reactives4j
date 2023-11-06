@@ -1,7 +1,7 @@
 package reactives4j.core;
 
 import org.jetbrains.annotations.NotNull;
-import java.util.maybe.Maybe;
+import reactives4j.maybe.Maybe;
 
 import java.util.function.BiConsumer;
 
@@ -19,6 +19,10 @@ class WatchState<T> extends BaseState<T> {
         source = rx;
         function = fx;
         cachedValue.set(rx.getValue());
+    }
+
+    boolean isSubscriber() {
+        return true;
     }
 
     @Override
@@ -40,6 +44,11 @@ class WatchState<T> extends BaseState<T> {
         // update the cached value
         cachedValue.set(value);
         return true;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("WatchState(%s)", cachedValue);
     }
 
 }

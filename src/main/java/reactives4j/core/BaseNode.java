@@ -1,6 +1,9 @@
 package reactives4j.core;
 
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import org.jetbrains.annotations.NotNull;
 
@@ -14,9 +17,8 @@ import java.util.function.Function;
  * @param <T> the type of the reactive node, {@link Void} if no type can be specified.
  */
 @Log4j2
-@ToString
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
-abstract class BaseNode<T> {
+abstract class BaseNode<T> implements Handle {
 
     /**
      * ReactiveContext associated with the current node.
@@ -95,10 +97,6 @@ abstract class BaseNode<T> {
 
     void setValue(T newValue) {
         state.setValue(newValue);
-    }
-
-    boolean canObserve() {
-        return state.canObserve();
     }
 
     boolean run(Runtime runtime) {
@@ -212,6 +210,11 @@ abstract class BaseNode<T> {
     void trigger(@NotNull Runtime runtime) {
         runtime.markDirty(this);
         runtime.runEffects();
+    }
+
+    @Override
+    public String toString() {
+        return String.format("Node(context=%s, type=%s, state=%s, status=%s)", context, type, state, status);
     }
 
 }

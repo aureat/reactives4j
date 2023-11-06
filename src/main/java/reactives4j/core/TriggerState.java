@@ -32,4 +32,9 @@ class TriggerState extends BaseState<Void> {
         action.accept(null);
     }
 
+    @Override
+    public String toString() {
+        return "TriggerState";
+    }
+
 }

@@ -42,11 +42,11 @@ abstract class BaseState<T> {
         panicBadType();
     }
 
-    boolean canRun() {
+    boolean isSubscriber() {
         return false;
     }
 
-    boolean canObserve() {
+    boolean isObserver() {
         return false;
     }
 

@@ -1,4 +1,4 @@
-package java.util.maybe;
+package reactives4j.maybe;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -107,37 +107,37 @@ public class Maybe<T> extends BaseMaybe<T> {
         return replace(null);
     }
 
-    public void set(@NotNull T newValue) {
+    public void set(T newValue) {
         value = newValue;
     }
 
-    public void setIfPresent(@NotNull T newValue) {
+    public void setIfPresent(T newValue) {
         if (isNothing()) return;
         value = newValue;
     }
 
-    public void setIfNothing(@NotNull T newValue) {
+    public void setIfNothing(T newValue) {
         if (isPresent()) return;
         value = newValue;
     }
 
-    public T setIfNothingAndGet(@NotNull T newValue) {
+    public T setIfNothingAndGet(T newValue) {
         if (isPresent()) return value;
         value = newValue;
         return newValue;
     }
 
-    public T setAndGet(@NotNull T newValue) {
+    public T setAndGet(T newValue) {
         set(newValue);
         return newValue;
     }
 
-    public void setAndThen(@NotNull T newValue, @NotNull Function<T, T> updater) {
+    public void setAndThen(T newValue, @NotNull Function<T, T> updater) {
         set(newValue);
         updater.apply(value);
     }
 
-    public T setAndThenGet(@NotNull T newValue, @NotNull Function<T, T> updater) {
+    public T setAndThenGet(T newValue, @NotNull Function<T, T> updater) {
         set(newValue);
         updater.apply(value);
         return value;
@@ -176,19 +176,19 @@ public class Maybe<T> extends BaseMaybe<T> {
         value = updater.apply(value);
     }
 
-    public <U> Maybe<U> map(Function<T, U> mapper) {
+    public <U> Maybe<U> map(@NotNull Function<T, U> mapper) {
         return just(BaseMaybe.map(this, () -> null, mapper));
     }
 
-    public <U> Maybe<U> mapOr(U other, Function<T, U> mapper) {
+    public <U> Maybe<U> mapOr(@NotNull U other, @NotNull Function<T, U> mapper) {
         return just(BaseMaybe.map(this, () -> other, mapper));
     }
 
-    public <U> Maybe<U> mapOrElse(Supplier<U> orElse, Function<T, U> mapper) {
+    public <U> Maybe<U> mapOrElse(@NotNull Supplier<U> orElse, @NotNull Function<T, U> mapper) {
         return just(BaseMaybe.map(this, orElse, mapper));
     }
 
-    public Maybe<T> filter(Predicate<T> predicate) {
+    public Maybe<T> filter(@NotNull Predicate<T> predicate) {
         return just(BaseMaybe.filter(this, predicate));
     }
 
@@ -201,27 +201,27 @@ public class Maybe<T> extends BaseMaybe<T> {
         }
     }
 
-    public <U> Maybe<U> and(Maybe<U> other) {
+    public <U> Maybe<U> and(@NotNull Maybe<U> other) {
         if (isNothing()) return nothing();
         return other;
     }
 
-    public <U> Maybe<U> andThen(Function<T, Maybe<U>> f) {
+    public <U> Maybe<U> andThen(@NotNull Function<T, Maybe<U>> f) {
         if (isNothing()) return nothing();
         return f.apply(value);
     }
 
-    public Maybe<T> or(Maybe<T> other) {
+    public Maybe<T> or(@NotNull Maybe<T> other) {
         if (isNothing()) return other;
         return just(value);
     }
 
-    public Maybe<T> orElse(Supplier<Maybe<T>> action) {
+    public Maybe<T> orElse(@NotNull Supplier<Maybe<T>> action) {
         if (isNothing()) return action.get();
         return just(value);
     }
 
-    public Maybe<T> xor(Maybe<T> other) {
+    public Maybe<T> xor(@NotNull Maybe<T> other) {
         if (isPresent() && other.isNothing()) return just(value);
         if (isNothing() && other.isPresent()) return just(other.value);
         return nothing();

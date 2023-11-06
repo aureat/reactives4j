@@ -4,10 +4,10 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.Contract;
+import reactives4j.maybe.Maybe;
 
 import java.util.*;
 import java.util.function.Supplier;
-import java.util.maybe.Maybe;
 
 /**
  * The runtime for the reactive system.
@@ -52,6 +52,12 @@ public class Runtime {
     final Map<BaseNode<?>, BaseNode<?>> owners = new HashMap<>();
 
     /**
+     * Map of nodes to their properties.
+     */
+    @Getter(AccessLevel.PACKAGE)
+    final Map<BaseNode<?>, Set<Property>> properties = new HashMap<>();
+
+    /**
      * Map of nodes to their cleanup functions.
      */
     @Getter(AccessLevel.PACKAGE)
@@ -80,7 +86,7 @@ public class Runtime {
     void update(BaseNode<?> node) {
         // run the computation and get the result
         boolean result;
-        if (node.canObserve()) {
+        if (node.getState().isObserver()) {
             result = withObserver(node, () -> node.run(this));
         } else {
             result = node.run(this);
@@ -200,11 +206,30 @@ public class Runtime {
         if (level.ordinal() > node.getStatus().ordinal())
             node.setStatus(level);
 
-        if (node.canObserve() && !observer.equals(Maybe.just(node)))
+        if (node.getState().isSubscriber() && !observer.equals(Maybe.just(node)))
             pending.add(node);
 
         if (node.isDirty())
             node.setMarked();
+    }
+
+    void addCleanup(BaseNode<?> node, Runnable cleanup) {
+        cleanups.putIfAbsent(node, new ArrayList<>());
+        cleanups.get(node).add(cleanup);
+    }
+
+    Property pushScopeProperty(BaseNode<?> propertyNode, PropertyType propertyType) {
+        var ownerNode = owner.expectGet("Reactive value outside of the reactive root");
+        properties.putIfAbsent(ownerNode, new HashSet<>());
+        var property = new Property(propertyNode, propertyType);
+        properties.get(ownerNode).add(property);
+        owners.put(propertyNode, ownerNode);
+        return property;
+    }
+
+    void removeScopeProperty(BaseNode<?> owner, Property property) {
+        properties.get(owner).remove(property);
+        owners.remove(property.node());
     }
 
     void cleanupSources(BaseNode<?> node) {
@@ -226,7 +251,7 @@ public class Runtime {
         nodes.remove(node);
     }
 
-    void dispose() {
+    void disposeRuntime() {
         observer.clear();
         subscribers.clear();
         sources.clear();

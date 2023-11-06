@@ -4,89 +4,50 @@ import lombok.Synchronized;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 
 public final class Reactives {
 
     /**
-     * Creates a new reactiveContext and sets it as the current reactiveContext.
-     *
-     * @return the new reactiveContext
+     * Creates a new reactive context and returns it
      */
     @Synchronized
     @Contract("-> new")
-    public static @NotNull ReactiveContext createContext() {
+    public static @NotNull ReactiveContext context() {
         return ReactiveContext.create();
     }
 
     /**
-     * Gets the current reactiveContext in use.
-     *
-     * @return the current reactiveContext
-     * @panics if no reactiveContext is available.
+     * Creates a new named reactive context and returns it
      */
     @Synchronized
-    @Contract(pure = true)
-    public static @NotNull ReactiveContext getContext() {
-        return ReactiveContext.getContext();
+    @Contract("_ -> new")
+    public static @NotNull ReactiveContext context(@NotNull String name) {
+        return ReactiveContext.create(name);
     }
 
     /**
-     * Sets the current reactiveContext.
+     * Submits an asynchronous task that runs on its own thread.
+     * Returns a future that can be used to retrieve the result of the computation.
+     * Technically, these are virtual threads, designed for these sort of tasks.
+     * This variant returns a result, for a variant that doesn't return a result, {@link TaskContext#submitTask(Runnable)}
+     *
+     * @see Resource
+     * @see Job
      */
-    @Synchronized
-    public static void setContext(ReactiveContext reactiveContext) {
-        ReactiveContext.setContext(reactiveContext);
+    public static <R> @NotNull Future<R> task(@NotNull Callable<R> fx) {
+        return TaskContext.getContext().submitTask(fx);
     }
 
     /**
-     * Creates a new reactive with the given value.
+     * Submits an asynchronous task that runs on its own thread.
+     * Returns a future that can be used to check task completion.
      *
-     * @param value the value
-     * @param <T>   the type of the value
-     * @return the new reactive
+     * @see TaskContext#submitTask(Callable)
      */
-    @Contract("_ -> new")
-    public static <T> @NotNull Reactive<T> reactive(T value) {
-        return Reactive.create(value);
-    }
-
-    @Contract("-> new")
-    public static @NotNull Trigger trigger() {
-        return Trigger.create();
-    }
-
-    @Contract("_ -> new")
-    public static <T> @NotNull Memo<T> memo(@NotNull Supplier<T> fx) {
-        return Memo.create(fx);
-    }
-
-    @Contract("_ -> new")
-    public static @NotNull Effect effect(@NotNull Runnable fx) {
-        return Effect.create(fx);
-    }
-
-    @Contract("_, _ -> new")
-    public static <T> @NotNull Watch<T> watch(@NotNull Reactive<T> rx, @NotNull Consumer<T> fx) {
-        return Watch.create(rx, (value, _old) -> fx.accept(value));
-    }
-
-    @Contract("_, _ -> new")
-    public static <T> @NotNull Watch<T> watch(@NotNull Reactive<T> rx, @NotNull BiConsumer<T, T> fx) {
-        return Watch.create(rx, fx);
-    }
-
-    @Contract("_, _ -> new")
-    public static <T> @NotNull Watch<T> watch(@NotNull Memo<T> rx, @NotNull Consumer<T> fx) {
-        return Watch.create(rx, (value, _old) -> fx.accept(value));
-    }
-
-    @Contract("_, _ -> new")
-    public static @NotNull Watch<Void> watch(@NotNull Trigger rx, @NotNull Runnable fx) {
-        BiConsumer<Void, Void> f = (_1, _2) -> fx.run();
-        return Watch.create(rx, f);
+    public static @NotNull Future<Void> task(@NotNull Runnable fx) {
+        return TaskContext.getContext().submitTask(fx);
     }
 
 }

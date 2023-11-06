@@ -1,10 +1,10 @@
 package reactives4j.core;
 
 import org.jetbrains.annotations.NotNull;
+import reactives4j.maybe.Maybe;
 
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.maybe.Maybe;
 
 class MemoState<T> extends BaseState<T> {
 
@@ -27,7 +27,7 @@ class MemoState<T> extends BaseState<T> {
     }
 
     @Override
-    boolean canObserve() {
+    boolean isObserver() {
         return true;
     }
 
@@ -37,6 +37,11 @@ class MemoState<T> extends BaseState<T> {
         T newValue = function.get();
         value.set(newValue);
         return !value.equals(oldValue);
+    }
+
+    @Override
+    public String toString() {
+        return String.format("MemoState(%s)", value);
     }
 
 }

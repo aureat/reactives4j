@@ -2,19 +2,19 @@ package reactives4j.core;
 
 public class ReactiveException extends RuntimeException {
 
-    protected ReactiveException(String message) {
+    public ReactiveException(String message) {
         super(message);
     }
 
-    protected ReactiveException(String message, Throwable cause) {
+    public ReactiveException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    protected ReactiveException(Throwable cause) {
+    public ReactiveException(Throwable cause) {
         super(cause);
     }
 
-    protected ReactiveException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+    public ReactiveException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }
 

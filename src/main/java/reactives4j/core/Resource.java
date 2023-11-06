@@ -1,16 +1,16 @@
 package reactives4j.core;
 
 import lombok.extern.log4j.Log4j2;
+import reactives4j.maybe.MaybeConst;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.maybe.MaybeConst;
 
 @Log4j2
-public class Resource<T> extends BaseTask<T> {
+public class Resource<T> {
 
     private final ReactiveContext context;
 
@@ -18,7 +18,7 @@ public class Resource<T> extends BaseTask<T> {
 
     private final Reactive<T> value;
 
-    private final Effect source;
+    private final Handle source;
 
     private final Reactive<Boolean> loading;
 
@@ -97,7 +97,7 @@ public class Resource<T> extends BaseTask<T> {
         var v = value.get();
         if (loading.getUntracked())
             return MaybeConst.nothing();
-        return MaybeConst.just(value.get());
+        return MaybeConst.just(v);
     }
 
     /**
@@ -106,11 +106,11 @@ public class Resource<T> extends BaseTask<T> {
      *
      * @see MaybeConst
      */
-    public MaybeConst<T> getOrDefault(T defaultValue) {
+    public T getOrDefault(T defaultValue) {
         var v = value.get();
         if (loading.getUntracked())
-            return MaybeConst.just(defaultValue);
-        return MaybeConst.just(value.get());
+            return defaultValue;
+        return v;
     }
 
     /**
@@ -132,8 +132,8 @@ public class Resource<T> extends BaseTask<T> {
      * @param action       the action to execute
      * @return the result of the action
      */
-    public <U> MaybeConst<U> withOrDefault(U defaultValue, Function<T, U> action) {
-        return get().mapOr(defaultValue, action);
+    public <U> U withOrDefault(U defaultValue, Function<T, U> action) {
+        return get().mapOr(defaultValue, action).getUnchecked();
     }
 
     /**

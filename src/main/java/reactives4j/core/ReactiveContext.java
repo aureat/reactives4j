@@ -67,7 +67,7 @@ public class ReactiveContext {
     @Contract("-> new")
     public static @NotNull ReactiveContext create() {
         var context = new ReactiveContext();
-        context.name = "reactiveContext" + counter++;
+        context.name = "" + counter++;
         context.initialize();
         context.logDebug("Creating and initializing a new reactive reactiveContext.");
         return context;
@@ -175,18 +175,18 @@ public class ReactiveContext {
      * @return the new effect
      */
     @Contract("_ -> new")
-    public @NotNull Effect effect(@NotNull Runnable fx) {
+    public @NotNull Handle effect(@NotNull Runnable fx) {
         return Effect.create(this, fx);
     }
 
     /**
-     * Watch on a reactive value that does not track the old value.
+     * WatchEffect on a reactive value that does not track the old value.
      *
-     * @see #watch(Reactive, BiConsumer)
+     * @see #watchEffect(Reactive, BiConsumer)
      */
     @Contract("_, _ -> new")
-    public <T> @NotNull Watch<T> watch(@NotNull Reactive<T> rx, @NotNull Consumer<T> fx) {
-        return Watch.create(this, rx, (value, _old) -> fx.accept(value));
+    public <T> @NotNull Handle watchEffect(@NotNull Reactive<T> rx, @NotNull Consumer<T> fx) {
+        return WatchEffect.create(this, rx, (value, _old) -> fx.accept(value));
     }
 
     /**
@@ -198,37 +198,37 @@ public class ReactiveContext {
      * @param rx  reactive value
      * @param fx  reactive closure
      * @return the new watch
-     * @see #watch(Reactive, Consumer)
+     * @see #watchEffect(Reactive, Consumer)
      */
     @Contract("_, _ -> new")
-    public <T> @NotNull Watch<T> watch(@NotNull Reactive<T> rx, @NotNull BiConsumer<T, T> fx) {
-        return Watch.create(this, rx, fx);
+    public <T> @NotNull Handle watchEffect(@NotNull Reactive<T> rx, @NotNull BiConsumer<T, T> fx) {
+        return WatchEffect.create(this, rx, fx);
     }
 
     /**
-     * Watch on a memo that does not track the old value.
+     * WatchEffect on a memo that does not track the old value.
      *
-     * @see #watch(Memo, BiConsumer)
+     * @see #watchEffect(Memo, BiConsumer)
      */
     @Contract("_, _ -> new")
-    public <T> @NotNull Watch<T> watch(@NotNull Memo<T> rx, @NotNull Consumer<T> fx) {
-        return Watch.create(this, rx, (value, _old) -> fx.accept(value));
+    public <T> @NotNull Handle watchEffect(@NotNull Memo<T> rx, @NotNull Consumer<T> fx) {
+        return WatchEffect.create(this, rx, (value, _old) -> fx.accept(value));
     }
 
     /**
      * Takes a memo and a function, and returns a watch handle.
-     * For a variant that takes a reactive value, see {@link #watch(Reactive, BiConsumer)}.
+     * For a variant that takes a reactive value, see {@link #watchEffect(Reactive, BiConsumer)}.
      * This variant tracks the old value of the memo.
      *
      * @param <T> type of the memo
      * @param rx  memo
      * @param fx  reactive closure
      * @return the new watch
-     * @see #watch(Memo, Consumer)
+     * @see #watchEffect(Memo, Consumer)
      */
     @Contract("_, _ -> new")
-    public <T> @NotNull Watch<T> watch(@NotNull Memo<T> rx, @NotNull BiConsumer<T, T> fx) {
-        return Watch.create(this, rx, fx);
+    public <T> @NotNull Handle watchEffect(@NotNull Memo<T> rx, @NotNull BiConsumer<T, T> fx) {
+        return WatchEffect.create(this, rx, fx);
     }
 
     /**
@@ -237,12 +237,12 @@ public class ReactiveContext {
      * @param rx trigger
      * @param fx reactive closure
      * @return the new watch
-     * @see #watch(Reactive, BiConsumer)
+     * @see #watchEffect(Reactive, BiConsumer)
      */
     @Contract("_, _ -> new")
-    public @NotNull Watch<Void> watch(@NotNull Trigger rx, @NotNull Runnable fx) {
+    public @NotNull Handle watchEffect(@NotNull Trigger rx, @NotNull Runnable fx) {
         BiConsumer<Void, Void> f = (_1, _2) -> fx.run();
-        return Watch.create(this, rx, f);
+        return WatchEffect.create(this, rx, f);
     }
 
     /**
@@ -253,7 +253,7 @@ public class ReactiveContext {
      *
      * @see Job
      */
-    public @NotNull Job job(@NotNull Runnable fx) {
+    public @NotNull TaskHandle job(@NotNull Runnable fx) {
         return Job.create(this, fx);
     }
 
@@ -273,6 +273,71 @@ public class ReactiveContext {
      */
     public <T> @NotNull Resource<T> resource(@NotNull Supplier<T> fx, T initialValue) {
         return Resource.create(this, fx, initialValue);
+    }
+
+    /**
+     * Sets up a job that runs whenever the reactive value changes.
+     * It is similar to {@link #watchEffect(Reactive, BiConsumer)} but it runs asynchronously.
+     * The job is not run immediately after creation.
+     */
+    public <T> @NotNull Handle watchJob(@NotNull Reactive<T> rx, @NotNull BiConsumer<T, T> fx) {
+        var watch = new WatchJob<T>(this);
+        watch.setSource(rx, fx);
+        return watch;
+    }
+
+    /**
+     * @see #watchJob(Reactive, BiConsumer)
+     */
+    public <T> @NotNull Handle watchJob(@NotNull Reactive<T> rx, @NotNull Consumer<T> fx) {
+        var watch = new WatchJob<T>(this);
+        watch.setSource(rx, fx);
+        return watch;
+    }
+
+    /**
+     * @see #watchJob(Reactive, BiConsumer)
+     */
+    public @NotNull Handle watchJob(@NotNull Trigger rx, @NotNull Runnable fx) {
+        var watch = new WatchJob<Void>(this);
+        watch.setSource(rx, fx);
+        return watch;
+    }
+
+    /**
+     * @see #watchJob(Reactive, BiConsumer)
+     */
+    public <T> @NotNull Handle watchJob(@NotNull Memo<T> rx, @NotNull BiConsumer<T, T> fx) {
+        var watch = new WatchJob<T>(this);
+        watch.setSource(rx, fx);
+        return watch;
+    }
+
+    /**
+     * @see #watchJob(Reactive, BiConsumer)
+     */
+    public <T> @NotNull Handle watchJob(@NotNull Memo<T> rx, @NotNull Consumer<T> fx) {
+        var watch = new WatchJob<T>(this);
+        watch.setSource(rx, fx);
+        return watch;
+    }
+
+    /**
+     * @see #watchJob(Reactive, BiConsumer)
+     */
+    public <T> @NotNull Handle watchJob(@NotNull Resource<T> rx, @NotNull BiConsumer<T, T> fx) {
+        var watch = new WatchJob<T>(this);
+        watch.setSource(rx, fx);
+        return watch;
+    }
+
+    /**
+     * @see #watchJob(Reactive, BiConsumer)
+     */
+    public <T> @NotNull Handle watchJob(@NotNull Resource<T> rx, @NotNull Consumer<T> fx) {
+        var watch = new WatchJob<T>(this);
+        watch.setSource(rx, fx);
+        return watch;
     }
 
     /**
@@ -383,7 +448,7 @@ public class ReactiveContext {
     @Synchronized
     public void dispose() {
         shutdown();
-        runtime.dispose();
+        runtime.disposeRuntime();
     }
 
     /**
@@ -392,7 +457,7 @@ public class ReactiveContext {
     @Synchronized
     public void disposeNow() {
         shutdownNow();
-        runtime.dispose();
+        runtime.disposeRuntime();
     }
 
     /**
