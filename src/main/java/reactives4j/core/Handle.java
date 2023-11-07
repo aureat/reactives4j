@@ -8,7 +8,7 @@ public interface Handle {
     /**
      * Gets the associated reactive context.
      */
-    ReactiveContext getContext();
+    Context getContext();
 
     /**
      * Disposes of the reactive node.

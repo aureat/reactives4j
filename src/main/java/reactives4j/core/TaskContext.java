@@ -28,6 +28,14 @@ public class TaskContext {
         return service.submit(fx);
     }
 
+    void shutdown() {
+        service.shutdown();
+    }
+
+    void shutdownNow() {
+        service.shutdownNow();
+    }
+
     private static class TaskContextHolder {
 
         private static final TaskContext instance = new TaskContext();

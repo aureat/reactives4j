@@ -4,11 +4,11 @@ import java.util.concurrent.Future;
 
 public class Trigger extends BaseNode<Void> {
 
-    Trigger(ReactiveContext cx) {
+    Trigger(Context cx) {
         super(cx, NodeType.Trigger, new TriggerState(), NodeStatus.Clean);
     }
 
-    static Trigger create(ReactiveContext cx) {
+    static Trigger create(Context cx) {
         return cx.with(runtime -> {
             var trigger = new Trigger(cx);
             runtime.addNode(trigger);

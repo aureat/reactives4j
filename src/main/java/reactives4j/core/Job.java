@@ -2,11 +2,11 @@ package reactives4j.core;
 
 public class Job extends BaseTask implements TaskHandle {
 
-    private Job(ReactiveContext cx) {
+    private Job(Context cx) {
         super(cx);
     }
 
-    static TaskHandle create(ReactiveContext cx, Runnable fx) {
+    static TaskHandle create(Context cx, Runnable fx) {
         var node = new Job(cx);
         node.source = cx.effect(() -> {
             node.loading.set(true);

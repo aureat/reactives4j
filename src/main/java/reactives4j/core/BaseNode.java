@@ -21,10 +21,10 @@ import java.util.function.Function;
 abstract class BaseNode<T> implements Handle {
 
     /**
-     * ReactiveContext associated with the current node.
+     * Context associated with the current node.
      */
     @Getter(AccessLevel.PUBLIC)
-    private final ReactiveContext context;
+    private final Context context;
 
     /**
      * Node type (reactive, trigger, memo, effect, watch)

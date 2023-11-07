@@ -75,7 +75,7 @@ public class Runtime {
      * @return the new runtime
      */
     @Contract(value = "_ -> new", pure = true)
-    static Runtime create(ReactiveContext cx) {
+    static Runtime create(Context cx) {
         var root = new Trigger(cx);
         var runtime = new Runtime();
         runtime.owner.set(root);

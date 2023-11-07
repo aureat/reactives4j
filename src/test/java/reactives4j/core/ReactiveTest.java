@@ -11,11 +11,10 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static reactives4j.core.Reactives.context;
 
 public class ReactiveTest {
 
-    ReactiveContext cx;
+    Context cx;
 
     @BeforeAll
     static void classSetup() {
@@ -30,7 +29,7 @@ public class ReactiveTest {
 
     @BeforeEach
     void testSetup() {
-        cx = context();
+        cx = Context.create().withDedicatedService();
     }
 
     @AfterEach
@@ -207,73 +206,58 @@ public class ReactiveTest {
         assertEquals(3, count.get());
     }
 
-//	@Test
-//	void test15() {
-//		var cleanupCount = new Counter();
-//		var trace = new ArrayList<Integer>();
-//		var number = cx.reactive(0);
-//		cx.effect(() -> {
-//			var value = number.get();
-//			trace.add(value);
-//		});
-//		for (int i = 1; i <= 10; i++) {
-//			number.set(i);
-//		}
-//		number.doWith(x -> {
-//			assertEquals(10, x);
-//			assertEquals(11, trace.size());
-//			assertEquals(10, cleanupCount.count());
-//		});
-//	}
-//
-//	@Test
-//	void test17() {
-//		cx.task(() -> {
-//			var n = new Random().nextInt(100);
-//			try {
-//				Thread.sleep(2000);
-//			} catch (Exception ignored) {}
-//			System.out.println(n);
-//		});
-//
-//		var value = Reactives.reactive(10);
-//		var j = job(() -> {});
-//
-//		Reactives.watch(value, x -> j.execute());
-//
-//		Reactives.effect(() -> {
-//			var val = value.get();
-//			cx.task(() -> System.out.println(val));
-//		});
-//
-//		var res = resource(() -> {
-//			var val = value.get();
-//			System.out.println(val);
-//		});
-//
-//		j = job(() -> {
-//
-//		});
-//	}
-//
+    @Test
+    void test15() {
+        var cleanupCount = new Counter();
+        var trace = new ArrayList<Integer>();
+        var number = cx.reactive(0);
+        cx.effect(() -> {
+            var value = number.get();
+            trace.add(value);
+        });
+        for (int i = 1; i <= 10; i++) {
+            number.set(i);
+        }
+        number.doWith(x -> {
+            assertEquals(10, x);
+            assertEquals(11, trace.size());
+            assertEquals(10, cleanupCount.count());
+        });
+    }
+
+    @Test
+    void test16() throws InterruptedException {
+        var a = cx.reactive(0);
+        var b = cx.reactive(0);
+        cx.effect(() -> {
+            var x = a.get();
+            var y = b.get();
+            System.out.println("sum = " + (x + y));
+        });
+        a.set(10);
+        b.set(20);
+        Thread.sleep(100);
+        assertEquals(30, a.get() + b.get());
+    }
 
     @Test
     void test18() throws InterruptedException {
         var a = cx.reactive(0);
         var b = cx.reactive(0);
         var sum = cx.resource(() -> {
-            System.out.println("summing");
             var x = a.get();
             var y = b.get();
+            System.out.println("sum = " + (x + y));
             return x + y;
         }, 0);
-        cx.watchEffect(sum.value(), x -> System.out.println("sum = " + x));
-        System.out.println("setting a to 10");
-        a.set(10); // queue[0]
-        System.out.println("setting b to 20");
-        b.set(20); // queue[1]
-        Thread.sleep(100);
+        cx.watchEffect(sum.value(), x -> System.out.println("value changed = " + x));
+        a.set(10);
+        b.set(20);
+        Thread.sleep(1000);
+        System.out.println(cx.getRuntime().subscribers.get(a));
+        System.out.println(cx.getRuntime().subscribers.get(b));
         System.out.println(cx.getRuntime().pending);
+        assertEquals(30, sum.value().get());
     }
 
     @Test
@@ -288,6 +272,14 @@ public class ReactiveTest {
         a.update(x -> x + 1);
         a.update(x -> x + 1);
         System.out.println("c = " + c.get());
+    }
+
+    @Test
+    void test20() {
+        var x = cx.reactive(0);
+        cx.watchEffect(x, value -> {
+            System.out.println("x = " + value);
+        }, true);
     }
 
     static class Counter {

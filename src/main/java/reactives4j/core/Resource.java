@@ -12,7 +12,7 @@ import java.util.function.Supplier;
 @Log4j2
 public class Resource<T> {
 
-    private final ReactiveContext context;
+    private final Context context;
 
     private final Supplier<T> getter;
 
@@ -22,7 +22,7 @@ public class Resource<T> {
 
     private final Reactive<Boolean> loading;
 
-    private Resource(ReactiveContext cx, Supplier<T> fx, T initialValue) {
+    private Resource(Context cx, Supplier<T> fx, T initialValue) {
         context = cx;
         getter = fx;
         loading = cx.reactive(false);
@@ -30,15 +30,15 @@ public class Resource<T> {
         source = cx.effect(this::runResource);
     }
 
-    private Resource(ReactiveContext cx, Supplier<T> fx) {
+    private Resource(Context cx, Supplier<T> fx) {
         this(cx, fx, null);
     }
 
-    static <T> Resource<T> create(ReactiveContext cx, Supplier<T> fx, T initialValue) {
+    static <T> Resource<T> create(Context cx, Supplier<T> fx, T initialValue) {
         return new Resource<T>(cx, fx, initialValue);
     }
 
-    static <T> Resource<T> create(ReactiveContext cx, Supplier<T> fx) {
+    static <T> Resource<T> create(Context cx, Supplier<T> fx) {
         return new Resource<>(cx, fx);
     }
 

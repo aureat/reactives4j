@@ -1,12 +1,10 @@
 package reactives4j.examples.counter;
 
+import reactives4j.core.Context;
 import reactives4j.core.Reactive;
-import reactives4j.core.ReactiveContext;
 
 import javax.swing.*;
 import java.awt.*;
-
-import static reactives4j.core.Reactives.context;
 
 public class CounterApp {
 
@@ -20,7 +18,7 @@ public class CounterApp {
 
     private final Reactive<Integer> count;
 
-    public CounterApp(ReactiveContext cx) {
+    public CounterApp(Context cx) {
         frame.setLayout(new BoxLayout(frame.getContentPane(), BoxLayout.X_AXIS));
         frame.setSize(200, 100);
         label.setPreferredSize(new Dimension(80, 20));
@@ -38,7 +36,7 @@ public class CounterApp {
     }
 
     public static void main(String[] args) {
-        var cx = context();
+        var cx = Context.create();
         var app = new CounterApp(cx);
     }
 

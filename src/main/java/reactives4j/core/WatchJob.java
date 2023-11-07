@@ -5,7 +5,7 @@ import java.util.function.Consumer;
 
 public class WatchJob<T> extends BaseTask implements TaskHandle {
 
-    WatchJob(ReactiveContext cx) {
+    WatchJob(Context cx) {
         super(cx);
     }
 

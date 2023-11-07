@@ -6,14 +6,14 @@ import lombok.Getter;
 public abstract class BaseTask implements TaskHandle {
 
     @Getter(AccessLevel.PUBLIC)
-    final ReactiveContext context;
+    final Context context;
 
     final Reactive<Boolean> loading;
 
     @Getter(AccessLevel.PUBLIC)
     Handle source;
 
-    BaseTask(ReactiveContext cx) {
+    BaseTask(Context cx) {
         context = cx;
         loading = cx.reactive(false);
     }

@@ -7,11 +7,20 @@ import java.util.function.Supplier;
 
 public class Memo<T> extends BaseNode<T> {
 
-    private Memo(ReactiveContext cx, Supplier<T> fx) {
+    private Memo(Context cx, Supplier<T> fx) {
         super(cx, NodeType.Memo, new MemoState<>(fx), NodeStatus.Dirty);
     }
 
-    static <T> Memo<T> create(ReactiveContext cx, Supplier<T> fx) {
+    static <T> Memo<T> create(Context cx, Supplier<T> fx, boolean lazy) {
+        if (lazy) {
+            var memo = new Memo<>(cx, fx);
+            cx.doWith(runtime -> {
+                runtime.addNode(memo);
+                runtime.updateIfNecessary(memo);
+            });
+            return memo;
+        }
+
         return cx.with(runtime -> {
             var memo = new Memo<>(cx, fx);
             runtime.addNode(memo);
