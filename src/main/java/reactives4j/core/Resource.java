@@ -18,7 +18,7 @@ public class Resource<T> {
 
     private final Reactive<T> value;
 
-    private final Handle source;
+    private final Effect source;
 
     private final Reactive<Boolean> loading;
 
@@ -27,7 +27,7 @@ public class Resource<T> {
         getter = fx;
         loading = cx.reactive(false);
         value = cx.reactive(initialValue);
-        source = cx.effect(this::runResource);
+        source = Effect.create(cx, this::runResource, false);
     }
 
     private Resource(Context cx, Supplier<T> fx) {
@@ -47,7 +47,8 @@ public class Resource<T> {
         var taskContext = TaskContext.getContext();
         var future = new CompletableFuture<T>();
         taskContext.submitTask(() -> {
-            var v = getter.get();
+            var v = context.getRuntime().withObserver(source, getter);
+//            var v = getter.get();
             future.complete(v);
         });
         return future.thenApplyAsync(v -> {

@@ -206,8 +206,10 @@ public class Runtime {
         if (level.ordinal() > node.getStatus().ordinal())
             node.setStatus(level);
 
-        if (node.getState().isSubscriber() && !observer.equals(Maybe.just(node)))
+        if (node.getState().isSubscriber() && !observer.equals(Maybe.just(node))) {
+            System.out.println("adding pending: " + node);
             pending.add(node);
+        }
 
         if (node.isDirty())
             node.setMarked();

@@ -32,6 +32,11 @@ class MemoState<T> extends BaseState<T> {
     }
 
     @Override
+    boolean isSubscriber() {
+        return true;
+    }
+
+    @Override
     boolean run(@NotNull Runtime runtime, @NotNull BaseNode<T> node) {
         Maybe<T> oldValue = value.take();
         T newValue = function.get();

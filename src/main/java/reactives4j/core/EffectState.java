@@ -16,6 +16,11 @@ class EffectState extends BaseState<Void> {
     }
 
     @Override
+    boolean isSubscriber() {
+        return true;
+    }
+
+    @Override
     boolean run(@NotNull Runtime runtime, @NotNull BaseNode<Void> node) {
         runtime.cleanupSources(node);
         function.run();

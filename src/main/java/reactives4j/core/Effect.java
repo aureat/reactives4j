@@ -6,7 +6,7 @@ public class Effect extends BaseNode<Void> implements Handle {
         super(cx, NodeType.Effect, new EffectState(fx), NodeStatus.Dirty);
     }
 
-    static Handle create(Context cx, Runnable fx, boolean lazy) {
+    static Effect create(Context cx, Runnable fx, boolean lazy) {
         if (lazy) {
             var effect = new Effect(cx, fx);
             cx.doWith(runtime -> {
